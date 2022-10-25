@@ -108,7 +108,7 @@ struct ContentView: View {
 
 // Extension to make it easy to scale a CIImage
 extension CIImage {
-    // Scaling, preserving aspect ratio
+    // Fixed aspect ratio
     func scaled(by scale: Double)->CIImage? {
         if let filter = CIFilter(name: "CILanczosScaleTransform") {
             filter.setValue(self, forKey: "inputImage")
@@ -119,7 +119,7 @@ extension CIImage {
         return nil
     }
     
-    // Scaling, changing aspect ratio
+    // Variable aspect ratio
     func scaled(x: CGFloat, y: CGFloat)->CIImage? {
         if let filter = CIFilter(name: "CIAffineTransform") {
             let xform = NSAffineTransform(transform: AffineTransform(scaleByX: x, byY: y))
