@@ -72,7 +72,6 @@ struct ContentView: View {
                             nsImage: $nsImage,
                             objectObservations: $objectObservations)
                     }
-                        .clipped()
                         .onAppear {
                                 // Get a list of attached cameras
                                 let discoveredCameraList =
@@ -150,10 +149,6 @@ struct ContentView: View {
         // message is sent to a submitter)
         objectRequest.enable {
             results in
-            /*
-            // A counter to provide an id for the benefit of SwiftUI's ForEach view
-            var i: Int = 0
-            */
             // Create empty list of observations
             var objectObservations: [VNRecognizedObjectObservation] = []
             // Iterate through the results of type VNRecognizedObjectObservation
@@ -163,27 +158,6 @@ struct ContentView: View {
                     // Append the observation to the list
                     objectObservations.append(objectObservation)
                 }
-                
-                /*
-                // Scale detection frames to the bounds of the video frame
-                let box = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(self.bounds.width), Int(self.bounds.height))
-                // Instantiate a new Detection object with the id and frame
-                var detection = Detection(id: i, frame: box)
-                // Iterate through the result identifiers
-                for label in objectObservation.labels.sorted(by: { o1, o2 in
-                    o1.confidence < o2.confidence
-                }) {
-                    // Filter out spurious detections
-                    if label.confidence > 0.5 {
-                        // Append the identifier/confidence factor pair as a tuple
-                        detection.identifiers.append((label.identifier, label.confidence))
-                    }
-                }
-                // Add the new detection to the list
-                detections.append(detection)
-                // Increment the integer id
-                i += 1
-                */
             }
             // Modifications to SwiftUI state must be performed on the main thread
             DispatchQueue.main.async {
