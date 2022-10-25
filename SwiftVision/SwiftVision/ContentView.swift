@@ -127,7 +127,14 @@ struct ContentView: View {
     
     // Peform detections on image
     func performDetections(onImage image: CIImage) {
-        // To be implemented in the next tutorial
+        performObjectDetections(onImage: image)
+    }
+    
+    func performObjectDetections(onImage image: CIImage) {
+        fixedFrameImageSubmitter.submit(
+            image: image,
+            imgWidth: image.extent.width,
+            imgHeight: image.extent.height)
     }
 }
 
