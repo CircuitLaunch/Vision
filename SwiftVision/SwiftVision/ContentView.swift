@@ -108,8 +108,8 @@ struct ContentView: View {
                             }
                         }
                         
-                        // Call method to start detections
-                        startDetections()
+                        // Call method to enable detections
+                        enableDetections()
                                             
                         // Start capturing
                         if let selectedId = cameraIds[selectedCamera] {
@@ -128,10 +128,10 @@ struct ContentView: View {
             .frame(width: bounds.width)
     }
     
-    // Start detections
-    func startDetections() {
+    // Enable detections
+    func enableDetections() {
         // Start object detection
-        startObjectDetections()
+        enableObjectDetections()
     }
     
     // Peform detections on image
@@ -139,8 +139,8 @@ struct ContentView: View {
         performObjectDetections(onImage: image)
     }
     
-    // Start object detection
-    func startObjectDetections() {
+    // Enable object detection
+    func enableObjectDetections() {
         // This sets the closure which will be called when objects are detected
         // and starts detecting
         objectRequest.start {
