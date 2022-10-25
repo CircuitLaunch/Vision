@@ -125,7 +125,9 @@ struct ContentView: View {
             .frame(width: bounds.width)
     }
     
+    // Peform detections on image
     func performDetections(onImage image: CIImage) {
+        // To be implemented in the next tutorial
     }
 }
 
