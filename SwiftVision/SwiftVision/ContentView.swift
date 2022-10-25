@@ -107,6 +107,9 @@ struct ContentView: View {
                                 self.bounds = bounds
                             }
                         }
+                        
+                        // Call method to start detections
+                        startDetections()
                                             
                         // Start capturing
                         if let selectedId = cameraIds[selectedCamera] {
@@ -125,11 +128,27 @@ struct ContentView: View {
             .frame(width: bounds.width)
     }
     
+    // Start detections
+    func startDetections() {
+        // Start object detection
+        startObjectDetections()
+    }
+    
     // Peform detections on image
     func performDetections(onImage image: CIImage) {
         performObjectDetections(onImage: image)
     }
     
+    // Start object detection
+    func startObjectDetections() {
+        // This sets the closure which will be called when objects are detected
+        // and starts detecting
+        objectRequest.start {
+            results in
+        }
+    }
+    
+    // Perform object detections
     func performObjectDetections(onImage image: CIImage) {
         fixedFrameImageSubmitter.submit(
             image: image,
