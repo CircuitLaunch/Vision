@@ -50,69 +50,81 @@ struct ContentView: View {
                 .padding(10)
 						// Image to display the captured frames
             Image(nsImage: nsImage)
-								.onAppear {
-												// Get a list of attached cameras
-												let discoveredCameraList =
-													AVCaptureDevice.DiscoverySession(
-														deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
-														mediaType: .video,
-														position: .unspecified
-													).devices
-												// Populate the names array and the name:id map
-		                    for discovered in discoveredCameraList {
-		                        cameraNames.append(discovered.localizedName)
-		                        cameraIds[discovered.localizedName] = discovered.uniqueID
-		                    }
+                .onAppear {
+                    // Get a list of attached cameras
+                    let discoveredCameraList =
+                        AVCaptureDevice.DiscoverySession(
+                            deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+                            mediaType: .video,
+                            position: .unspecified
+                        ).devices
+                    // Populate the names array and the name:id map
+                    for discovered in discoveredCameraList {
+                        cameraNames.append(discovered.localizedName)
+                        cameraIds[discovered.localizedName] = discovered.uniqueID
+                    }
 
-												// Attach a closure to the videoCapture object  handle incoming frames
-                        videoCapture
-                            .onCapturedImage { buffer in
-                                if let buffer = buffer {
-                                    // Get the dimensions of the image
-                                    let width = CVPixelBufferGetWidth(buffer)
-                                    let height = CVPixelBufferGetHeight(buffer)
-                                    var bounds = CGRect(x: 0, y: 0, width: width, height: height)
-                                    // Create a CoreImage image class with the buffer
-                                    var ciImage = CIImage(cvImageBuffer: buffer)
-                                    // Scale the image
-                                    if let scaledImage = ciImage.scaled(by: scale) {
-                                        ciImage = scaledImage
-                                        bounds.size = CGSize(width: Int(Double(width) * scale), height: Int(Double(height) * scale))
-                                    }
-                                    // Convert it to a CoreGraphics image and then into a Cocoa NSImage
-                                    if let cgImage = sharedContext.createCGImage(ciImage, from: bounds) {
-                                        nsImage = NSImage(cgImage: cgImage, size: bounds.size)
-                                    }
-                                    // Update the image dimensions source of truth
-                                    self.bounds = bounds
+                    // Attach a closure to the videoCapture object  handle incoming frames
+                    videoCapture
+                        .onCapturedImage { buffer in
+                            if let buffer = buffer {
+                                // Get the dimensions of the image
+                                let width = CVPixelBufferGetWidth(buffer)
+                                let height = CVPixelBufferGetHeight(buffer)
+                                var bounds = CGRect(x: 0, y: 0, width: width, height: height)
+                                // Create a CoreImage image class with the buffer
+                                var ciImage = CIImage(cvImageBuffer: buffer)
+                                // Scale the image
+                                if let scaledImage = ciImage.scaled(by: scale) {
+                                    ciImage = scaledImage
+                                    bounds.size = CGSize(width: Int(Double(width) * scale), height: Int(Double(height) * scale))
                                 }
+                                // Convert it to a CoreGraphics image and then into a Cocoa NSImage
+                                if let cgImage = sharedContext.createCGImage(ciImage, from: bounds) {
+                                    nsImage = NSImage(cgImage: cgImage, size: bounds.size)
+                                }
+                                // Update the image dimensions source of truth
+                                self.bounds = bounds
                             }
-												
-												// Start capturing
+                        }
+                                            
+                        // Start capturing
                         if let selectedId = cameraIds[selectedCamera] {
                             videoCapture.start(using: selectedId)
                         }
                     }
                 .onChange(of: selectedCamera) { newValue in
-												// Restart when the user selects another camera
+                        // Restart when the user selects another camera
                         if let selectedId = cameraIds[selectedCamera] {
                             videoCapture.start(using: selectedId)
                         }
                     }
         }
-						.padding()
-						// Shrink view to contents
+            .padding()
+            // Shrink view to contents
             .frame(width: bounds.width)
     }
 }
 
+// Extension to make it easy to scale a CIImage
 extension CIImage {
-    // Extension to make it easy to scale a CIImage
+    // Scaling, preserving aspect ratio
     func scaled(by scale: Double)->CIImage? {
         if let filter = CIFilter(name: "CILanczosScaleTransform") {
             filter.setValue(self, forKey: "inputImage")
             filter.setValue(scale, forKey: "inputScale")
             filter.setValue(1.0, forKey: "inputAspectRatio")
+            return filter.value(forKey: "outputImage") as? CIImage
+        }
+        return nil
+    }
+    
+    // Scaling, changing aspect ratio
+    func scaled(x: CGFloat, y: CGFloat)->CIImage? {
+        if let filter = CIFilter(name: "CIAffineTransform") {
+            let xform = NSAffineTransform(transform: AffineTransform(scaleByX: x, byY: y))
+            filter.setValue(self, forKey: "inputImage")
+            filter.setValue(xform, forKey: "inputTransform")
             return filter.value(forKey: "outputImage") as? CIImage
         }
         return nil
