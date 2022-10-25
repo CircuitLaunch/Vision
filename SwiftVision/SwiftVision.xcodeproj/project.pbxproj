@@ -16,6 +16,7 @@
 		C2A9588C29073BA600F78E17 /* SwiftVisionUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9588B29073BA600F78E17 /* SwiftVisionUITestsLaunchTests.swift */; };
 		C2A9589929073BF800F78E17 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589829073BF800F78E17 /* VideoCapture.swift */; };
 		C2A9589B29074A3A00F78E17 /* VisionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589A29074A3A00F78E17 /* VisionRequest.swift */; };
+		C2A9589D290763C600F78E17 /* CoreMLRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589C290763C600F78E17 /* CoreMLRequest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		C2A9588B29073BA600F78E17 /* SwiftVisionUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftVisionUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		C2A9589829073BF800F78E17 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		C2A9589A29074A3A00F78E17 /* VisionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionRequest.swift; sourceTree = "<group>"; };
+		C2A9589C290763C600F78E17 /* CoreMLRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLRequest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 				C2A9586F29073BA600F78E17 /* ContentView.swift */,
 				C2A9589829073BF800F78E17 /* VideoCapture.swift */,
 				C2A9589A29074A3A00F78E17 /* VisionRequest.swift */,
+				C2A9589C290763C600F78E17 /* CoreMLRequest.swift */,
 				C2A9587129073BA600F78E17 /* Assets.xcassets */,
 				C2A9587629073BA600F78E17 /* SwiftVision.entitlements */,
 				C2A9587329073BA600F78E17 /* Preview Content */,
@@ -267,6 +270,7 @@
 			files = (
 				C2A9587029073BA600F78E17 /* ContentView.swift in Sources */,
 				C2A9589929073BF800F78E17 /* VideoCapture.swift in Sources */,
+				C2A9589D290763C600F78E17 /* CoreMLRequest.swift in Sources */,
 				C2A9586E29073BA600F78E17 /* SwiftVisionApp.swift in Sources */,
 				C2A9589B29074A3A00F78E17 /* VisionRequest.swift in Sources */,
 			);
