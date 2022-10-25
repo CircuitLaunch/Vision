@@ -7,12 +7,28 @@
 
 import SwiftUI
 import AVFoundation
+import Vision
 
 // Instantiate a VideoCapture object
 let videoCapture = VideoCapture()
 
 // Create a CoreImage context for image manipulation
 let sharedContext = CIContext(options: [.useSoftwareRenderer: false])
+
+// URL for the YOLOv5s model embedded in the main bundle
+let yolov5sURL = Bundle.main.url(forResource: "yolov5s", withExtension: "mlmodelc")
+
+// Instantiate an MLModel with the YOLOv5s model
+let mlModel = try? MLModel(contentsOf: yolov5sURL!)
+
+// Wrap it in a VNCoreMLModel so Vision can deal with it
+let vnCoreMLModel = try? VNCoreMLModel(for: mlModel!)
+
+// Create a image submitter that will scale the image to requisite size
+let fixedFrameImageSubmitter = VisionRequest.FixedImageSubmitter(withBounds: CGRect(origin: .zero, size: CGSize(width: 640.0, height: 640.0)))
+
+// Create a reusable CoreMLRequest object
+let objectRequest = CoreMLRequest(withModel: vnCoreMLModel!, forSubmitter: fixedFrameImageSubmitter)
 
 struct ContentView: View {
 
@@ -74,6 +90,10 @@ struct ContentView: View {
                                 var bounds = CGRect(x: 0, y: 0, width: width, height: height)
                                 // Create a CoreImage image class with the buffer
                                 var ciImage = CIImage(cvImageBuffer: buffer)
+                                
+                                // Call method to perform detections
+                                performDetections(onImage: ciImage)
+                                
                                 // Scale the image
                                 if let scaledImage = ciImage.scaled(by: scale) {
                                     ciImage = scaledImage
@@ -103,6 +123,9 @@ struct ContentView: View {
             .padding()
             // Shrink view to contents
             .frame(width: bounds.width)
+    }
+    
+    func performDetections(onImage image: CIImage) {
     }
 }
 

@@ -60,7 +60,7 @@ extension VisionRequest {
 
     // Class to submit a detection request on a single image frame
     class ImageSubmitter: Submitter {
-        // Override if needed to customize image bounds
+        // Override if needed to enforce image bounds
         func adjustedBounds(_ bounds: CGRect)->CGRect {
             return bounds
         }
