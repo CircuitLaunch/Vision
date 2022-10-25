@@ -18,6 +18,7 @@
 		C2A9589B29074A3A00F78E17 /* VisionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589A29074A3A00F78E17 /* VisionRequest.swift */; };
 		C2A9589D290763C600F78E17 /* CoreMLRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589C290763C600F78E17 /* CoreMLRequest.swift */; };
 		C2A9589F29076DB700F78E17 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = C2A9589E29076DB700F78E17 /* yolov5s.mlmodel */; };
+		C2A958A129078FF400F78E17 /* ObjectObservationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		C2A9589A29074A3A00F78E17 /* VisionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionRequest.swift; sourceTree = "<group>"; };
 		C2A9589C290763C600F78E17 /* CoreMLRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLRequest.swift; sourceTree = "<group>"; };
 		C2A9589E29076DB700F78E17 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
+		C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservationsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +107,7 @@
 			children = (
 				C2A9586D29073BA600F78E17 /* SwiftVisionApp.swift */,
 				C2A9586F29073BA600F78E17 /* ContentView.swift */,
+				C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */,
 				C2A9589829073BF800F78E17 /* VideoCapture.swift */,
 				C2A9589A29074A3A00F78E17 /* VisionRequest.swift */,
 				C2A9589C290763C600F78E17 /* CoreMLRequest.swift */,
@@ -272,6 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C2A9587029073BA600F78E17 /* ContentView.swift in Sources */,
+				C2A958A129078FF400F78E17 /* ObjectObservationsView.swift in Sources */,
 				C2A9589929073BF800F78E17 /* VideoCapture.swift in Sources */,
 				C2A9589D290763C600F78E17 /* CoreMLRequest.swift in Sources */,
 				C2A9586E29073BA600F78E17 /* SwiftVisionApp.swift in Sources */,

@@ -53,6 +53,28 @@ class VisionRequest {
     func createVNRequest(_ closure: VNRequestCompletionHandler?)->VNRequest? {
         return nil
     }
+    
+    // Enables a request
+    func enable(_ completion: (([Any])->())?) {
+        // If we have a valid request
+        if let req = self.request {
+            // Keep a reference to any given completion closure
+            _onResults = completion
+            // Append the request to the submitter's list of requests
+            submitter.requests.append(req)
+        }
+    }
+    
+    // Disables a request
+    func disable() {
+        // If we have a valid request
+        if let req = self.request{
+            // Remove the request from the submitter's list of requests
+            submitter.requests.removeAll { candidate in
+                candidate === req
+            }
+        }
+    }
 }
 
 // Specializations of the Submitter class

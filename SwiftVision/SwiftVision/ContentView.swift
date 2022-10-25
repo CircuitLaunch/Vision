@@ -39,117 +39,163 @@ struct ContentView: View {
     // The name of the currently selected camera
     @State private var selectedCamera = "FaceTime HD Camera"
     
-    // The bounds of the captured frames
-    @State var bounds = CGRect(x:0.0, y:0.0, width:100.0, height:100.0)
-    // The scaling factor for display
-    @State var scale: Double = 0.333333333
-    
     // The currently captured frame as an NSImage
     @State private var nsImage = NSImage()
+    
+    @State private var objectObservations: [VNRecognizedObjectObservation] = []
 
     var body: some View {
-				// Vertical stack containing a Picker, and an Image
-        VStack(spacing: 0.0) {
-						// Create a Picker named "Cameras" and bind
-            // selectedCamera to its selection variable
-            Picker("Cameras", selection: $selectedCamera) {
-								// Populate the picker with the camera names
-								ForEach(cameraNames, id: \.self) { name in
-										// The displayed text is the name of each camera
-										// The tag is the value to return in selectedCamera
-										// when the user picks an option; in this case is
-										// also the camera name
-                    Text(name).tag(name)
+        ZStack {
+            GeometryReader {
+                outer in
+                // Vertical stack containing a Picker, and an Image
+                VStack(spacing: 10.0) {
+                    // Create a Picker named "Cameras" and bind
+                    // selectedCamera to its selection variable
+                    Picker("Cameras", selection: $selectedCamera) {
+                        // Populate the picker with the camera names
+                        ForEach(cameraNames, id: \.self) { name in
+                            // The displayed text is the name of each camera
+                            // The tag is the value to return in selectedCamera
+                            // when the user picks an option; in this case is
+                            // also the camera name
+                            Text(name).tag(name)
+                        }
+                    }
+                        .pickerStyle(.segmented)
+                    ZStack {
+                        // Image to display the captured frames
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                        ObjectObservationsView(
+                            nsImage: $nsImage,
+                            objectObservations: $objectObservations)
+                    }
+                        .clipped()
+                        .onAppear {
+                                // Get a list of attached cameras
+                                let discoveredCameraList =
+                                    AVCaptureDevice.DiscoverySession(
+                                        deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+                                        mediaType: .video,
+                                        position: .unspecified
+                                    ).devices
+                                // Populate the names array and the name:id map
+                                for discovered in discoveredCameraList {
+                                    cameraNames.append(discovered.localizedName)
+                                    cameraIds[discovered.localizedName] = discovered.uniqueID
+                                }
+                                
+                                // Attach a closure to the videoCapture object  handle incoming frames
+                                videoCapture
+                                    .onCapturedImage { buffer in
+                                        if let buffer = buffer {
+                                            // Get the dimensions of the image
+                                            let width = CVPixelBufferGetWidth(buffer)
+                                            let height = CVPixelBufferGetHeight(buffer)
+                                            let bounds = CGRect(x: 0, y: 0, width: width, height: height)
+                                            
+                                            // Create a CoreImage image class with the buffer
+                                            let ciImage = CIImage(cvImageBuffer: buffer)
+                                            
+                                            // Call method to perform detections
+                                            performDetections(onImage: ciImage)
+                                            
+                                            // Convert it to a CoreGraphics image and then into a Cocoa NSImage
+                                            if let cgImage = sharedContext.createCGImage(ciImage, from: bounds) {
+                                                nsImage = NSImage(cgImage: cgImage, size: bounds.size)
+                                            }
+                                        }
+                                    }
+                                    
+                                // Call method to enable detections
+                                enableDetections()
+                                                    
+                                // Start capturing
+                                if let selectedId = cameraIds[selectedCamera] {
+                                    videoCapture.start(using: selectedId)
+                                }
+                            }
+                            
+                        .onChange(of: selectedCamera) {
+                                newValue in
+                                // Restart when the user selects another camera
+                                if let selectedId = cameraIds[selectedCamera] {
+                                    videoCapture.start(using: selectedId)
+                                }
+                            }
                 }
             }
-                .pickerStyle(.segmented)
-                .padding(10)
-						// Image to display the captured frames
-            Image(nsImage: nsImage)
-                .onAppear {
-                    // Get a list of attached cameras
-                    let discoveredCameraList =
-                        AVCaptureDevice.DiscoverySession(
-                            deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
-                            mediaType: .video,
-                            position: .unspecified
-                        ).devices
-                    // Populate the names array and the name:id map
-                    for discovered in discoveredCameraList {
-                        cameraNames.append(discovered.localizedName)
-                        cameraIds[discovered.localizedName] = discovered.uniqueID
-                    }
-
-                    // Attach a closure to the videoCapture object  handle incoming frames
-                    videoCapture
-                        .onCapturedImage { buffer in
-                            if let buffer = buffer {
-                                // Get the dimensions of the image
-                                let width = CVPixelBufferGetWidth(buffer)
-                                let height = CVPixelBufferGetHeight(buffer)
-                                var bounds = CGRect(x: 0, y: 0, width: width, height: height)
-                                // Create a CoreImage image class with the buffer
-                                var ciImage = CIImage(cvImageBuffer: buffer)
-                                
-                                // Call method to perform detections
-                                performDetections(onImage: ciImage)
-                                
-                                // Scale the image
-                                if let scaledImage = ciImage.scaled(by: scale) {
-                                    ciImage = scaledImage
-                                    bounds.size = CGSize(width: Int(Double(width) * scale), height: Int(Double(height) * scale))
-                                }
-                                // Convert it to a CoreGraphics image and then into a Cocoa NSImage
-                                if let cgImage = sharedContext.createCGImage(ciImage, from: bounds) {
-                                    nsImage = NSImage(cgImage: cgImage, size: bounds.size)
-                                }
-                                // Update the image dimensions source of truth
-                                self.bounds = bounds
-                            }
-                        }
-                        
-                        // Call method to enable detections
-                        enableDetections()
-                                            
-                        // Start capturing
-                        if let selectedId = cameraIds[selectedCamera] {
-                            videoCapture.start(using: selectedId)
-                        }
-                    }
-                .onChange(of: selectedCamera) { newValue in
-                        // Restart when the user selects another camera
-                        if let selectedId = cameraIds[selectedCamera] {
-                            videoCapture.start(using: selectedId)
-                        }
-                    }
         }
-            .padding()
-            // Shrink view to contents
-            .frame(width: bounds.width)
+            .padding(EdgeInsets(top: 5.0, leading: 5.0, bottom: 10.0, trailing: 5.0))
     }
     
     // Enable detections
     func enableDetections() {
-        // Start object detection
+        // Enable object detections
         enableObjectDetections()
     }
     
     // Peform detections on image
     func performDetections(onImage image: CIImage) {
+        // Peform object detections
         performObjectDetections(onImage: image)
     }
     
     // Enable object detection
     func enableObjectDetections() {
         // This sets the closure which will be called when objects are detected
-        // and starts detecting
-        objectRequest.start {
+        // and enables detecting (detection only actually happens when a submit()
+        // message is sent to a submitter)
+        objectRequest.enable {
             results in
+            /*
+            // A counter to provide an id for the benefit of SwiftUI's ForEach view
+            var i: Int = 0
+            */
+            // Create empty list of observations
+            var objectObservations: [VNRecognizedObjectObservation] = []
+            // Iterate through the results of type VNRecognizedObjectObservation
+            for result in results where result is VNRecognizedObjectObservation {
+                // Ensure a correct cast
+                if let objectObservation = result as? VNRecognizedObjectObservation {
+                    // Append the observation to the list
+                    objectObservations.append(objectObservation)
+                }
+                
+                /*
+                // Scale detection frames to the bounds of the video frame
+                let box = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(self.bounds.width), Int(self.bounds.height))
+                // Instantiate a new Detection object with the id and frame
+                var detection = Detection(id: i, frame: box)
+                // Iterate through the result identifiers
+                for label in objectObservation.labels.sorted(by: { o1, o2 in
+                    o1.confidence < o2.confidence
+                }) {
+                    // Filter out spurious detections
+                    if label.confidence > 0.5 {
+                        // Append the identifier/confidence factor pair as a tuple
+                        detection.identifiers.append((label.identifier, label.confidence))
+                    }
+                }
+                // Add the new detection to the list
+                detections.append(detection)
+                // Increment the integer id
+                i += 1
+                */
+            }
+            // Modifications to SwiftUI state must be performed on the main thread
+            DispatchQueue.main.async {
+                // Swap in the new list
+                self.objectObservations = objectObservations
+            }
         }
     }
     
     // Perform object detections
     func performObjectDetections(onImage image: CIImage) {
+        // Trigger a detection by submitting an image
         fixedFrameImageSubmitter.submit(
             image: image,
             imgWidth: image.extent.width,
