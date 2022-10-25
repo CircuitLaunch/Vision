@@ -27,9 +27,9 @@ struct ObjectObservationsView: View {
                     let box = VNImageRectForNormalizedRect(observation.boundingBox, Int(bounds.size.width), Int(bounds.size.height))
                     // Inner ZStack to encapsulate frame and confidence label text
                     ZStack {
-                        // 3-pixel thick red frame
+                        // 3-pixel thick frame
                         Rectangle()
-                            .strokeBorder(Color.red, style: StrokeStyle(lineWidth: 3.0))
+                            .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 3.0))
                             // Blend with image for visibility
                             .blendMode(SwiftUI.BlendMode.difference)
                         // Vertical alignment
@@ -37,8 +37,9 @@ struct ObjectObservationsView: View {
                             // Interate through the first 3 returned confidence labels with over 70% confidence
                             ForEach(mostConfident(labels: observation.labels, minConfidence: 0.7, maxCount: 3), id: \.uuid) {
                                 label in
-                                Text("\(label.identifier) (\(label.confidence))")
-                                    .foregroundColor(.red)
+                                Text("\(label.identifier) (\(String(format: "%0.2f", label.confidence)))")
+                                    .foregroundColor(.white)
+                                    .scaleEffect(CGSize(width: 1.5, height: 1.5))
                                     // Blend with image for visibility
                                     .blendMode(SwiftUI.BlendMode.difference)
                             }
