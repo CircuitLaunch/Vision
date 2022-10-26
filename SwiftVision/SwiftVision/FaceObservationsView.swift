@@ -48,18 +48,33 @@ struct FaceObservationsView: View {
                                     // Blend with image for visibility
                                     .blendMode(SwiftUI.BlendMode.difference)
                             }
-                            /*
-                            // Interate through the first 3 returned confidence labels with over 70% confidence
-                            ForEach(mostConfident(labels: observation.labels, minConfidence: 0.7, maxCount: 3), id: \.uuid) {
-                                label in
-                                Text("\(label.identifier) (\(String(format: "%0.2f", label.confidence)))")
-                                    .foregroundColor(.white)
-                                    .scaleEffect(CGSize(width: 1.5, height: 1.5))
-                                    // Blend with image for visibility
-                                    .blendMode(SwiftUI.BlendMode.difference)
+                            Spacer() // Push content to top and bottom of frame
+                            HStack {
+                                // If head roll information is available
+                                if let roll = observation.roll {
+                                    // Display roll angle
+                                    Text(String(format: "roll: %0.2lf", Angle(radians: Double(roll.floatValue)).degrees))
+                                        .foregroundColor(.white)
+                                        // Blend with image for visibility
+                                        .blendMode(SwiftUI.BlendMode.difference)
+                                }
+                                // If head yaw information is available
+                                if let yaw = observation.yaw {
+                                    // Display yaw angle
+                                    Text(String(format: "yaw %0.2lf", Angle(radians: Double(yaw.floatValue)).degrees))
+                                        .foregroundColor(.white)
+                                        // Blend with image for visibility
+                                        .blendMode(SwiftUI.BlendMode.difference)
+                                }
+                                // If head pitch information is available
+                                if let pitch = observation.pitch {
+                                    // Display pitch angle
+                                    Text(String(format: "pitch %0.2lf", Angle(radians: Double(pitch.floatValue)).degrees))
+                                        .foregroundColor(.white)
+                                        // Blend with image for visibility
+                                        .blendMode(SwiftUI.BlendMode.difference)
+                                }
                             }
-                            */
-                            Spacer() // Push content up to top of frame
                         }
                             .padding(10.0)
                     }
@@ -93,24 +108,6 @@ struct FaceObservationsView: View {
         let size = adjustedSize(src, dst)
         return CGRect(origin: CGPoint(x: (dst.width - size.width) * 0.5, y: (dst.height - size.height) * 0.5), size: size)
     }
-    
-    /*
-    // Confidence label filter
-    func mostConfident(labels: [VNClassificationObservation], minConfidence: VNConfidence, maxCount: Int)->[VNClassificationObservation] {
-        // Make a mutable copy of the list
-        var newLabels = labels
-        // Remove all labels with confidence levels below the minimum
-        newLabels.removeAll { label in label.confidence < minConfidence }
-        // Sort the remaining
-        newLabels = newLabels.sorted { l1, l2 in l1.confidence > l2.confidence }
-        // Drop all but the first maxCount
-        if newLabels.count > maxCount {
-            newLabels = newLabels.dropLast(newLabels.count - maxCount)
-        }
-        // Return
-        return newLabels
-    }
-    */
 }
 
 /*
