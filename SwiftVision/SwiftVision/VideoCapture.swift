@@ -69,12 +69,32 @@ class VideoCapture : NSObject {
             return
         }
 				
+        // Attempt to lock the device for configuration, so that
+        // we can set the frame rate, on macOS, this must be done
+        // before we call beginConfiguration()
+        var locked = false
+        do {
+            try device.lockForConfiguration()
+            locked = true
+        } catch {
+        }
+        
         // Begin configuring the session
         captureSession.beginConfiguration()
         
         // Add the input and output
         captureSession.addInput(deviceInput)
         captureSession.addOutput(sessionOutput)
+        
+        // If we successfully locked the device for configuration, we can
+        // specify the frame rate. This must be done after the device has
+				// been added to the session inputs.
+        if locked {
+            // Set the minimum frame rate to 15 frames per second
+            device.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 15)
+            // Set the maximum frame rate to 15 frames per second
+            device.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 15)
+        }
         
         // Configure the output to discard late frames
         sessionOutput.alwaysDiscardsLateVideoFrames = true
@@ -94,6 +114,13 @@ class VideoCapture : NSObject {
 				
         // Start the session
         captureSession.startRunning()
+
+		// If the device was locked for configuration, unlock it.
+        // This must be done after starting the capture session, or
+        // macOS will reset the frame rate.
+        if locked {
+            device.unlockForConfiguration()
+        }
     }
     
     // Terminate the session if it is active

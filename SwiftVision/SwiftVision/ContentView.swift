@@ -24,11 +24,17 @@ let mlModel = try? MLModel(contentsOf: yolov5sURL!)
 // Wrap it in a VNCoreMLModel so Vision can deal with it
 let vnCoreMLModel = try? VNCoreMLModel(for: mlModel!)
 
-// Create a image submitter that will scale the image to requisite size
+// Create an image submitter that will scale the image to requisite size
 let fixedFrameImageSubmitter = VisionRequest.FixedImageSubmitter(withBounds: CGRect(origin: .zero, size: CGSize(width: 640.0, height: 640.0)))
 
 // Create a reusable CoreMLRequest object
 let objectRequest = CoreMLRequest(withModel: vnCoreMLModel!, forSubmitter: fixedFrameImageSubmitter)
+
+// Create an image submitter
+let imageSubmitter = VisionRequest.ImageSubmitter()
+
+// Create a reusable FaceDetectionRequest object
+let faceRequest = FaceDetectionRequest(forSubmitter: imageSubmitter)
 
 struct ContentView: View {
 
@@ -43,6 +49,8 @@ struct ContentView: View {
     @State private var nsImage = NSImage()
     
     @State private var objectObservations: [VNRecognizedObjectObservation] = []
+    
+    @State private var faceObservations: [VNFaceObservation] = []
 
     var body: some View {
         ZStack {
@@ -71,6 +79,9 @@ struct ContentView: View {
                         ObjectObservationsView(
                             nsImage: $nsImage,
                             objectObservations: $objectObservations)
+                        FaceObservationsView(
+                            nsImage: $nsImage,
+                            faceObservations: $faceObservations)
                     }
                         .onAppear {
                                 // Get a list of attached cameras
@@ -134,12 +145,16 @@ struct ContentView: View {
     func enableDetections() {
         // Enable object detections
         enableObjectDetections()
+        // Enable face detections
+        enableFaceDetections()
     }
     
     // Peform detections on image
     func performDetections(onImage image: CIImage) {
         // Peform object detections
         performObjectDetections(onImage: image)
+        // Perform face detections
+        performFaceDetections(onImage: image)
     }
     
     // Enable object detection
@@ -171,6 +186,40 @@ struct ContentView: View {
     func performObjectDetections(onImage image: CIImage) {
         // Trigger a detection by submitting an image
         fixedFrameImageSubmitter.submit(
+            image: image,
+            imgWidth: image.extent.width,
+            imgHeight: image.extent.height)
+    }
+    
+    // Enable face detections
+    func enableFaceDetections() {
+        // This sets the closure which will be called when faces are detected
+        // and enables detecting (detection only actually happes when a submit()
+        // message is sent to a submitter)
+        faceRequest.enable {
+            results in
+            // Create empty list of observations
+            var faceObservations: [VNFaceObservation] = []
+            // Iterate through the results of type VNFaceObservation
+            for result in results where result is VNFaceObservation {
+                // Ensure a correct cast
+                if let faceObservation = result as? VNFaceObservation {
+                    // Append the observation to the list
+                    faceObservations.append(faceObservation)
+                }
+            }
+            // Modifications to SwiftUI state must be performed on the main thread
+            DispatchQueue.main.async {
+                // Swap in the new list
+                self.faceObservations = faceObservations
+            }
+        }
+    }
+    
+    // Perform face detections
+    func performFaceDetections(onImage image: CIImage) {
+        // Trigger a detection by submitting an image
+        imageSubmitter.submit(
             image: image,
             imgWidth: image.extent.width,
             imgHeight: image.extent.height)
