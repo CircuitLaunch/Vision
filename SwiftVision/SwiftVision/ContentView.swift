@@ -36,6 +36,12 @@ let imageSubmitter = VisionRequest.ImageSubmitter()
 // Create a reusable FaceDetectionRequest object
 let faceRequest = FaceDetectionRequest(forSubmitter: imageSubmitter)
 
+// Create a second image submitter
+let imageSubmitter2 = VisionRequest.ImageSubmitter()
+
+// Create a reusable FaceLandmarkDetectionRequest object
+let faceLandmarkRequest = FaceLandmarkDetectionRequest(forSubmitter: imageSubmitter2)
+
 struct ContentView: View {
 
 		// An array to store the names of available cameras
@@ -45,13 +51,18 @@ struct ContentView: View {
     // The name of the currently selected camera
     @State private var selectedCamera = "FaceTime HD Camera"
     
+    // The currently captured frame as an CIImage
+    @State private var ciImage = CIImage()
+    
     // The currently captured frame as an NSImage
     @State private var nsImage = NSImage()
     
     @State private var objectObservations: [VNRecognizedObjectObservation] = []
     
     @State private var faceObservations: [VNFaceObservation] = []
-
+    
+    @State private var landmarkObservations: [VNFaceObservation] = []
+    
     var body: some View {
         ZStack {
             GeometryReader {
@@ -82,6 +93,9 @@ struct ContentView: View {
                         FaceObservationsView(
                             nsImage: $nsImage,
                             faceObservations: $faceObservations)
+                        FaceLandmarksView(
+                            nsImage: $nsImage,
+                            faceObservations: $landmarkObservations)
                     }
                         .onAppear {
                                 // Get a list of attached cameras
@@ -108,6 +122,9 @@ struct ContentView: View {
                                             
                                             // Create a CoreImage image class with the buffer
                                             let ciImage = CIImage(cvImageBuffer: buffer)
+                                            
+                                            // Cache this CIImage for facelandmark detection
+                                            self.ciImage = ciImage
                                             
                                             // Call method to perform detections
                                             performDetections(onImage: ciImage)
@@ -147,6 +164,8 @@ struct ContentView: View {
         enableObjectDetections()
         // Enable face detections
         enableFaceDetections()
+        // Enable face landmark detections
+        enableFaceLandmarkDetections()
     }
     
     // Peform detections on image
@@ -213,6 +232,14 @@ struct ContentView: View {
                 // Swap in the new list
                 self.faceObservations = faceObservations
             }
+            
+            // If there were face observations, they have been cached by Vision.
+            // Trigger face landmark detection by submitting the image again.
+            if faceObservations.count > 0 {
+                imageSubmitter2.submit(
+                    image: self.ciImage,
+                    imgWidth: self.ciImage.extent.size.width, imgHeight: self.ciImage.extent.size.height)
+            }
         }
     }
     
@@ -223,6 +250,31 @@ struct ContentView: View {
             image: image,
             imgWidth: image.extent.width,
             imgHeight: image.extent.height)
+    }
+    
+    // Enable face landmark detections
+    func enableFaceLandmarkDetections() {
+        // This sets the closure which will be called when faces are processed
+        // for landmark detection.
+        faceLandmarkRequest.enable {
+            results in
+            // Create empty list of observations
+            var faceObservations: [VNFaceObservation] = []
+            // Iterate through the results of type VNFaceObservation
+            for result in results where result is VNFaceObservation {
+                // Ensure a correct cast
+                if let faceObservation = result as? VNFaceObservation {
+                    // Append the observation to the list
+                    faceObservations.append(faceObservation)
+                }
+            }
+            // Modifications to SwiftUI state must be performed on the main thread
+            DispatchQueue.main.async {
+                // Swap in the new list
+                self.landmarkObservations = faceObservations
+            }
+            
+        }
     }
 }
 

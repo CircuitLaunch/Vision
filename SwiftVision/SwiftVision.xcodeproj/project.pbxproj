@@ -21,6 +21,8 @@
 		C2A958A129078FF400F78E17 /* ObjectObservationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */; };
 		C2A958A32908AF9100F78E17 /* FaceDetectionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958A22908AF9100F78E17 /* FaceDetectionRequest.swift */; };
 		C2A958A52908B8A300F78E17 /* FaceObservationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958A42908B8A300F78E17 /* FaceObservationsView.swift */; };
+		C2A958A72908C21C00F78E17 /* FaceLandmarkDetectionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958A62908C21C00F78E17 /* FaceLandmarkDetectionRequest.swift */; };
+		C2A958AB2908CCBC00F78E17 /* FaceLandmarksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A958AA2908CCBC00F78E17 /* FaceLandmarksView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,8 @@
 		C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectObservationsView.swift; sourceTree = "<group>"; };
 		C2A958A22908AF9100F78E17 /* FaceDetectionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceDetectionRequest.swift; sourceTree = "<group>"; };
 		C2A958A42908B8A300F78E17 /* FaceObservationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceObservationsView.swift; sourceTree = "<group>"; };
+		C2A958A62908C21C00F78E17 /* FaceLandmarkDetectionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceLandmarkDetectionRequest.swift; sourceTree = "<group>"; };
+		C2A958AA2908CCBC00F78E17 /* FaceLandmarksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceLandmarksView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,10 +117,12 @@
 				C2A9586F29073BA600F78E17 /* ContentView.swift */,
 				C2A958A029078FF400F78E17 /* ObjectObservationsView.swift */,
 				C2A958A42908B8A300F78E17 /* FaceObservationsView.swift */,
+				C2A958AA2908CCBC00F78E17 /* FaceLandmarksView.swift */,
 				C2A9589829073BF800F78E17 /* VideoCapture.swift */,
 				C2A9589A29074A3A00F78E17 /* VisionRequest.swift */,
 				C2A9589C290763C600F78E17 /* CoreMLRequest.swift */,
 				C2A958A22908AF9100F78E17 /* FaceDetectionRequest.swift */,
+				C2A958A62908C21C00F78E17 /* FaceLandmarkDetectionRequest.swift */,
 				C2A9587129073BA600F78E17 /* Assets.xcassets */,
 				C2A9589E29076DB700F78E17 /* yolov5s.mlmodel */,
 				C2A9587629073BA600F78E17 /* SwiftVision.entitlements */,
@@ -284,10 +290,12 @@
 				C2A9587029073BA600F78E17 /* ContentView.swift in Sources */,
 				C2A958A129078FF400F78E17 /* ObjectObservationsView.swift in Sources */,
 				C2A9589929073BF800F78E17 /* VideoCapture.swift in Sources */,
+				C2A958A72908C21C00F78E17 /* FaceLandmarkDetectionRequest.swift in Sources */,
 				C2A9589D290763C600F78E17 /* CoreMLRequest.swift in Sources */,
 				C2A958A32908AF9100F78E17 /* FaceDetectionRequest.swift in Sources */,
 				C2A9586E29073BA600F78E17 /* SwiftVisionApp.swift in Sources */,
 				C2A9589F29076DB700F78E17 /* yolov5s.mlmodel in Sources */,
+				C2A958AB2908CCBC00F78E17 /* FaceLandmarksView.swift in Sources */,
 				C2A9589B29074A3A00F78E17 /* VisionRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
