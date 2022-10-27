@@ -407,17 +407,21 @@ struct ContentView: View {
                                     trackedObservations[observation.uuid] = observation
                                 }
                             }
+                        /*
                         } else {
                             if let request = trackingRequests[observation.uuid], let vnRequest = request.request as? VNTrackObjectRequest {
                                 vnRequest.isLastFrame = true
                             }
+                        */
                         }
                         // If we've lost track of this observation
                         if !reuptake {
                             // Pull the TrackingRequest object associated with this obervation
                             if let request = trackingRequests[observation.uuid] {
                                 print("Recycling tracking request \(observation.uuid)")
-
+                                if let vnRequest = request.request as? VNTrackObjectRequest {
+                                    vnRequest.isLastFrame = true
+                                }
                                 // Disable the request
                                 request.disable()
                                 // Remove it from the map of current TrackingRequests
