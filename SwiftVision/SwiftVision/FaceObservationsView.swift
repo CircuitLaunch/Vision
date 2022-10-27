@@ -29,7 +29,7 @@ struct FaceObservationsView: View {
                     ZStack {
                         // 3-pixel thick frame
                         Rectangle()
-                            .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 3.0))
+                            .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 1.0))
                             // Blend with image for visibility
                             .blendMode(SwiftUI.BlendMode.difference)
                         
@@ -49,30 +49,39 @@ struct FaceObservationsView: View {
                                     .blendMode(SwiftUI.BlendMode.difference)
                             }
                             Spacer() // Push content to top and bottom of frame
-                            HStack {
-                                // If head roll information is available
-                                if let roll = observation.roll {
-                                    // Display roll angle
-                                    Text(String(format: "roll: %0.2lf", Angle(radians: Double(roll.floatValue)).degrees))
-                                        .foregroundColor(.white)
-                                        // Blend with image for visibility
-                                        .blendMode(SwiftUI.BlendMode.difference)
+                            VStack(spacing: 2.0) {
+                                HStack {
+                                    // If head roll information is available
+                                    if let roll = observation.roll {
+                                        // Display roll angle
+                                        Text(String(format: "roll: %0.2lf", Angle(radians: Double(roll.floatValue)).degrees))
+                                            .foregroundColor(.white)
+                                            // Blend with image for visibility
+                                            .blendMode(SwiftUI.BlendMode.difference)
+                                    }
+                                    Spacer()
                                 }
-                                // If head yaw information is available
-                                if let yaw = observation.yaw {
-                                    // Display yaw angle
-                                    Text(String(format: "yaw %0.2lf", Angle(radians: Double(yaw.floatValue)).degrees))
-                                        .foregroundColor(.white)
-                                        // Blend with image for visibility
-                                        .blendMode(SwiftUI.BlendMode.difference)
+                                HStack {
+                                    // If head yaw information is available
+                                    if let yaw = observation.yaw {
+                                        // Display yaw angle
+                                        Text(String(format: "yaw %0.2lf", Angle(radians: Double(yaw.floatValue)).degrees))
+                                            .foregroundColor(.white)
+                                            // Blend with image for visibility
+                                            .blendMode(SwiftUI.BlendMode.difference)
+                                    }
+                                    Spacer()
                                 }
-                                // If head pitch information is available
-                                if let pitch = observation.pitch {
-                                    // Display pitch angle
-                                    Text(String(format: "pitch %0.2lf", Angle(radians: Double(pitch.floatValue)).degrees))
-                                        .foregroundColor(.white)
-                                        // Blend with image for visibility
-                                        .blendMode(SwiftUI.BlendMode.difference)
+                                HStack {
+                                    // If head pitch information is available
+                                    if let pitch = observation.pitch {
+                                        // Display pitch angle
+                                        Text(String(format: "pitch %0.2lf", Angle(radians: Double(pitch.floatValue)).degrees))
+                                            .foregroundColor(.white)
+                                            // Blend with image for visibility
+                                            .blendMode(SwiftUI.BlendMode.difference)
+                                    }
+                                    Spacer()
                                 }
                             }
                         }

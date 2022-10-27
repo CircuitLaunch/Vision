@@ -68,7 +68,8 @@ class VisionRequest {
     // Disables a request
     func disable() {
         // If we have a valid request
-        if let req = self.request{
+        if let req = self.request {
+            req.cancel()
             // Remove the request from the submitter's list of requests
             submitter.requests.removeAll { candidate in
                 candidate === req

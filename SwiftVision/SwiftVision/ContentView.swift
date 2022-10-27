@@ -42,9 +42,17 @@ let imageSubmitter2 = VisionRequest.ImageSubmitter()
 // Create a reusable FaceLandmarkDetectionRequest object
 let faceLandmarkRequest = FaceLandmarkDetectionRequest(forSubmitter: imageSubmitter2)
 
+// Create a sequence submitter
+let sequenceSubmitter = VisionRequest.SequenceSubmitter()
+
+// A dictionary of tracks
+var trackingRequests: [UUID: TrackingRequest] = [:]
+// A pool of reusable tracking requests
+var trackerPool: [TrackingRequest] = []
+
 struct ContentView: View {
 
-		// An array to store the names of available cameras
+    // An array to store the names of available cameras
     @State private var cameraNames = [String]()
     // A map to associate names with camera ids
     @State private var cameraIds = [String:String]()
@@ -63,6 +71,8 @@ struct ContentView: View {
     
     @State private var landmarkObservations: [VNFaceObservation] = []
     
+    @State private var trackedObservations: [UUID: VNDetectedObjectObservation] = [:]
+
     var body: some View {
         ZStack {
             GeometryReader {
@@ -96,6 +106,9 @@ struct ContentView: View {
                         FaceLandmarksView(
                             nsImage: $nsImage,
                             faceObservations: $landmarkObservations)
+                        TrackedObservationsView(
+                            nsImage: $nsImage,
+                            trackedObservations: $trackedObservations)
                     }
                         .onAppear {
                                 // Get a list of attached cameras
@@ -174,6 +187,8 @@ struct ContentView: View {
         performObjectDetections(onImage: image)
         // Perform face detections
         performFaceDetections(onImage: image)
+        // Perform tracking
+        performTracking(onImage: image)
     }
     
     // Enable object detection
@@ -225,6 +240,8 @@ struct ContentView: View {
                 if let faceObservation = result as? VNFaceObservation {
                     // Append the observation to the list
                     faceObservations.append(faceObservation)
+                    // Track this face
+                    trackObservation(faceObservation)
                 }
             }
             // Modifications to SwiftUI state must be performed on the main thread
@@ -239,6 +256,11 @@ struct ContentView: View {
                 imageSubmitter2.submit(
                     image: self.ciImage,
                     imgWidth: self.ciImage.extent.size.width, imgHeight: self.ciImage.extent.size.height)
+            } else {
+                // If there were no face detections, we need to also clear any old landmark observations
+                DispatchQueue.main.async {
+                    self.landmarkObservations = []
+                }
             }
         }
     }
@@ -275,6 +297,150 @@ struct ContentView: View {
             }
             
         }
+    }
+    
+    /*
+    // This doesn't seem to work. Not sure why, but I'm keeping this code in case
+    // I figure it out later
+    func pruneTrackers() {
+        var newTrackers: [UUID: TrackingRequest] = [:]
+        for(id, tracker) in trackingRequests {
+            var reuptake = true
+            if !newTrackers.keys.contains(id) {
+                // Get bounds of observation
+                let trackedBounds = tracker.objectObservation.boundingBox
+                for (_, newTracker) in newTrackers {
+                    let newBounds = newTracker.objectObservation.boundingBox
+                    // Calculate the intersection bounds
+                    let intersection = trackedBounds.intersection(newBounds)
+                    // If there is ANY overlap at all, prune it
+                    if !intersection.isEmpty {
+                        reuptake = false
+                    }
+                }
+                if reuptake {
+                    newTrackers[id] = tracker
+                } else {
+                    print("Pruning tracker \(tracker.objectObservation.uuid)")
+                    tracker.disable()
+                }
+            }
+        }
+        trackingRequests = newTrackers
+    }
+    */
+    
+    // Attempt to determine if an observation is already being tracked
+    func alreadyTracked(_ observation: VNDetectedObjectObservation)->Bool {
+        // Scan through existing requests
+        for (_, request) in trackingRequests {
+            // Get bounds of tracked observation
+            let trackedBounds = request.objectObservation.boundingBox
+            // Get bounds of current observation
+            let observedBounds = observation.boundingBox
+            // Calculate the intersection bounds
+            let intersection = trackedBounds.intersection(observedBounds)
+            // If there is ANY overlap at all, assume this is being tracked
+            if !intersection.isEmpty {
+                return true
+            }
+        }
+        return false
+    }
+    
+    // Track an observation
+    func trackObservation(_ observation: VNDetectedObjectObservation) {
+        // If we are not currently tracking any observations, take this opportunity to
+        // reset the sequenceSubmitter to free tracker resources for reuse
+        if trackingRequests.count == 0 && trackerPool.count > 0 {
+            sequenceSubmitter.reset()
+            trackerPool = []
+        }
+        
+        // Don't track if this observation is already being tracked
+        if alreadyTracked(observation) {
+            return
+        }
+        
+        // I've read that Vision only supports a max of 16 simultaneous
+        // tracking requests, and experimentation bears this out, but
+        // I'm not taking chances. Increase this number at your own risk.
+        if trackingRequests.count < 10 {
+            var trackingRequest: TrackingRequest
+            
+            // If there are TrackingRequest objects in the pool,
+            // pop the last one for reuse
+            if let last = trackerPool.last {
+                print("Reusing tracking request for \(observation.uuid)")
+                trackerPool.removeLast()
+                trackingRequest = last
+                trackingRequest.reuse(forNewObservation: observation)
+            // Otherwise, create a new tracking request
+            } else {
+                print("Creating tracking request for \(observation.uuid)")
+                trackingRequest = TrackingRequest(withInitialObservation: observation, forSubmitter: sequenceSubmitter)
+            }
+            
+            // Add it to the dictionary
+            trackingRequests[observation.uuid] = trackingRequest
+            
+            // Enable this tracking request for this observation
+            trackingRequest.enable {
+                // Handle results
+                results in
+                // Iterate through results
+                for result in results {
+                    // Assume this is the last frame
+                    var reuptake = false
+                    // Cast the result to a VNDetectedObjectObservation
+                    if let observation = result as? VNDetectedObjectObservation {
+                        // If the confidence is greater than 0.3
+                        if observation.confidence > 0.3 {
+                            // And there's a valid tracking request
+                            if let request = trackingRequests[observation.uuid] {
+                                // Reuse this request with the updated observation
+                                request.reuse(forNewObservation: observation)
+                                // Prevent this request from being recycled
+                                reuptake = true
+                                // Update the tracked observations for SwiftUI
+                                DispatchQueue.main.async {
+                                    trackedObservations[observation.uuid] = observation
+                                }
+                            }
+                        } else {
+                            if let request = trackingRequests[observation.uuid], let vnRequest = request.request as? VNTrackObjectRequest {
+                                vnRequest.isLastFrame = true
+                            }
+                        }
+                        // If we've lost track of this observation
+                        if !reuptake {
+                            // Pull the TrackingRequest object associated with this obervation
+                            if let request = trackingRequests[observation.uuid] {
+                                print("Recycling tracking request \(observation.uuid)")
+
+                                // Disable the request
+                                request.disable()
+                                // Remove it from the map of current TrackingRequests
+                                trackingRequests[observation.uuid] = nil
+                                // Return it to the pool
+                                trackerPool.append(request)
+                                // Remove this observation from the trackedObservation map
+                                DispatchQueue.main.async {
+                                    trackedObservations[observation.uuid] = nil
+                                    print("Observations tracked: \(trackingRequests.count), in circulation: \(trackingRequests.count + trackerPool.count)")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        print("Observations tracked: \(trackingRequests.count), in circulation: \(trackingRequests.count + trackerPool.count)")
+    }
+    
+    func performTracking(onImage image: CIImage) {
+        // pruneTrackers()
+        sequenceSubmitter.submit(image: image)
     }
 }
 

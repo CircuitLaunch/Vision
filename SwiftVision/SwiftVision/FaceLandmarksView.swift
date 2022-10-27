@@ -33,11 +33,12 @@ struct FaceLandmarksView: View {
                             let region = landmarks[i]
                             // Render a path
                             generatePath(fromLandmarkRegion: region)
-                                .stroke(Color.orange, style: StrokeStyle(lineWidth: 2.0))
+                                .stroke(Color.white, style: StrokeStyle(lineWidth: 2.0))
                         }
                     }
                 }
             }
+                .opacity(0.75)
                 // When the nsImage changes, recalculate the bounds rectangle
                 .onChange(of: nsImage) { img in
                         bounds = adjustedBounds(img.size, g.size)

@@ -29,7 +29,7 @@ struct ObjectObservationsView: View {
                     ZStack {
                         // 3-pixel thick frame
                         Rectangle()
-                            .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 3.0))
+                            .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 1.0))
                             // Blend with image for visibility
                             .blendMode(SwiftUI.BlendMode.difference)
                         // Vertical alignment
